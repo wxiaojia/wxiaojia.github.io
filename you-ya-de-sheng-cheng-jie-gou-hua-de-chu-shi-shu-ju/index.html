@@ -1,0 +1,227 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>优雅的生成结构化的初始数据 | Gridea</title>
+<link rel="shortcut icon" href="https://wxiaojia.github.io/favicon.ico?v=1605579913456">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
+<link rel="stylesheet" href="https://wxiaojia.github.io/styles/main.css">
+<link rel="alternate" type="application/atom+xml" title="优雅的生成结构化的初始数据 | Gridea - Atom Feed" href="https://wxiaojia.github.io/atom.xml">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
+
+
+
+    <meta name="description" content="传统的方法：
+function initialize(list) {
+for(let i = 0; i &lt; list.length; i++) {
+list[i] = 0;
+}
+return list;
+}
+const list = ..." />
+    <meta name="keywords" content="" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
+    <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
+  </head>
+  <body>
+    <div class="main">
+      <div class="main-content">
+        <div class="site-header">
+  <a href="https://wxiaojia.github.io">
+  <img class="avatar" src="https://wxiaojia.github.io/images/avatar.png?v=1605579913456" alt="">
+  </a>
+  <h1 class="site-title">
+    Gridea
+  </h1>
+  <p class="site-description">
+    温故而知新
+  </p>
+  <div class="menu-container">
+    
+      
+        <a href="/" class="menu">
+          首页
+        </a>
+      
+    
+      
+        <a href="/archives" class="menu">
+          归档
+        </a>
+      
+    
+      
+        <a href="/tags" class="menu">
+          标签
+        </a>
+      
+    
+      
+        <a href="/post/about" class="menu">
+          关于
+        </a>
+      
+    
+  </div>
+  <div class="social-container">
+    
+      
+    
+      
+    
+      
+    
+      
+    
+      
+    
+  </div>
+</div>
+
+        <div class="post-detail">
+          <article class="post">
+            <h2 class="post-title">
+              优雅的生成结构化的初始数据
+            </h2>
+            <div class="post-info">
+              <span>
+                2020-11-17
+              </span>
+              <span>
+                3 min read
+              </span>
+              
+            </div>
+            
+            <div class="post-content-wrapper">
+              <div class="post-content">
+                <p>传统的方法：<br>
+function initialize(list) {<br>
+for(let i = 0; i &lt; list.length; i++) {<br>
+list[i] = 0;<br>
+}<br>
+return list;<br>
+}<br>
+const list = new Array(100);<br>
+initialize(list);<br>
+console.log(list); // [0, 0, ... 0]<br>
+新建的数组 new Array（100） ，元素的初始值是empty,而迭代方法（foreach、map、some、every、filter、reduce）及for in并不会遍历数组中的empty元素，所以用这两种方法的初始化是不行的<br>
+有效做法：<br>
+const list =[..Array(100)].map(()=&gt;0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+还可以用Array.from方法创建初始数组, 第二参数是迭代算子，所以不必+map转2次<br>
+const list =Array.from({length:100},()=&gt;0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+由于例子中初始化数组的初始值是固定的数值0，所以可以使用Array.prototype.fill方法<br>
+const list =Array(100).fill(0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+注意fill方法用来填充元素的值如果是引用类型，它并不会拷贝这个值，而是直接将引用赋给数组，这也就是说，如果我们企图通过fill来初始化二维数组，是有问题的<br>
+const matrix = Array(3).fill(Array(3).fill(0));<br>
+matrix[0][1] = 1;<br>
+console.log(matrix); // [[0, 1, 0], [0, 1, 0], [0, 1, 0]]<br>
+matrix[0]、matrix[1]和matrix[2]指向同一个引用</p>
+<p>若想初始化一个长度10的数组，初始值分别0-9<br>
+const list = [..Array(10).keys()]<br>
+console.log(list)</p>
+<p>生成器！！！<br>
+只有mapFunc是生成器函数的时候，才用yield*迭代展开，否则直接yield返回。<br>
+function <em>initializer(count, mapFunc = i =&gt; i) {<br>
+for(let i = 0; i &lt; count; i++) {<br>
+if(mapFunc.constructor.name === 'GeneratorFunction') {<br>
+yield</em> mapFunc(i, count);<br>
+} else {<br>
+yield mapFunc(i, count);<br>
+}<br>
+}<br>
+}<br>
+const list = [...initializer(3, i =&gt; [0, 0, 0])];<br>
+console.log(list); // [[0, 0, 0], [0, 0, 0], [0, 0, 0]]<br>
+const mat3 = [...initializer(3, function *(i) {<br>
+yield Number(i === 0);<br>
+yield Number(i === 1);<br>
+yield Number(i === 2);<br>
+})]<br>
+console.log(mat3); // [1, 0, 0, 0, 1, 0, 0, 0, 1]<br>
+生成器是个好东西，比如：初始化扑克牌时，[花色，点数]（不包括大小王）<br>
+const cards = [...initializer(13, function *(i) {<br>
+const p = i + 1;<br>
+yield ['♠️', p];<br>
+yield ['♣️', p];<br>
+yield ['♥️', p];<br>
+yield ['♦️', p];<br>
+})];<br>
+console.log(cards);</p>
+
+              </div>
+              <div class="toc-container">
+                
+              </div>
+            </div>
+          </article>
+        </div>
+
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wxiaojia.github.io/about/">
+              <h3 class="post-title">
+                关于
+              </h3>
+            </a>
+          </div>
+        
+
+        
+
+        <div class="site-footer">
+  Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a>
+  <a class="rss" href="https://wxiaojia.github.io/atom.xml" target="_blank">
+    <i class="ri-rss-line"></i> RSS
+  </a>
+</div>
+
+      </div>
+    </div>
+
+    <script>
+      hljs.initHighlightingOnLoad()
+
+      let mainNavLinks = document.querySelectorAll(".markdownIt-TOC a");
+
+      // This should probably be throttled.
+      // Especially because it triggers during smooth scrolling.
+      // https://lodash.com/docs/4.17.10#throttle
+      // You could do like...
+      // window.addEventListener("scroll", () => {
+      //    _.throttle(doThatStuff, 100);
+      // });
+      // Only not doing it here to keep this Pen dependency-free.
+
+      window.addEventListener("scroll", event => {
+        let fromTop = window.scrollY;
+
+        mainNavLinks.forEach((link, index) => {
+          let section = document.getElementById(decodeURI(link.hash).substring(1));
+          let nextSection = null
+          if (mainNavLinks[index + 1]) {
+            nextSection = document.getElementById(decodeURI(mainNavLinks[index + 1].hash).substring(1));
+          }
+          if (section.offsetTop <= fromTop) {
+            if (nextSection) {
+              if (nextSection.offsetTop > fromTop) {
+                link.classList.add("current");
+              } else {
+                link.classList.remove("current");    
+              }
+            } else {
+              link.classList.add("current");
+            }
+          } else {
+            link.classList.remove("current");
+          }
+        });
+      });
+
+    </script>
+  </body>
+</html>
