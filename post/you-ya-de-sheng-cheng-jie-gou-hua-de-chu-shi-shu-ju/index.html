@@ -2,23 +2,23 @@
   <head>
     <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>关于 | Gridea</title>
+<title>优雅的生成结构化的初始数据 | Gridea</title>
 <link rel="shortcut icon" href="https://wxiaojia.github.io/favicon.ico?v=1605579046919">
 <link href="https://cdn.jsdelivr.net/npm/remixicon@2.3.0/fonts/remixicon.css" rel="stylesheet">
 <link rel="stylesheet" href="https://wxiaojia.github.io/styles/main.css">
-<link rel="alternate" type="application/atom+xml" title="关于 | Gridea - Atom Feed" href="https://wxiaojia.github.io/atom.xml">
+<link rel="alternate" type="application/atom+xml" title="优雅的生成结构化的初始数据 | Gridea - Atom Feed" href="https://wxiaojia.github.io/atom.xml">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Droid+Serif:400,700">
 
 
 
-    <meta name="description" content="
-欢迎来到我的小站呀，很高兴遇见你！🤝
-
-🏠 关于本站
-👨‍💻 博主是谁
-⛹ 兴趣爱好
-📬 联系我呀
-..." />
+    <meta name="description" content="传统的方法：
+function initialize(list) {
+for(let i = 0; i &lt; list.length; i++) {
+list[i] = 0;
+}
+return list;
+}
+const list = ..." />
     <meta name="keywords" content="" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.10.0/katex.min.css">
     <script src="https://cdn.bootcss.com/highlight.js/9.12.0/highlight.min.js"></script>
@@ -81,46 +81,94 @@
         <div class="post-detail">
           <article class="post">
             <h2 class="post-title">
-              关于
+              优雅的生成结构化的初始数据
             </h2>
             <div class="post-info">
               <span>
-                2019-01-25
+                2020-11-17
               </span>
               <span>
-                1 min read
+                3 min read
               </span>
               
             </div>
             
             <div class="post-content-wrapper">
               <div class="post-content">
-                <blockquote>
-<p>欢迎来到我的小站呀，很高兴遇见你！🤝</p>
-</blockquote>
-<h2 id="关于本站">🏠 关于本站</h2>
-<h2 id="博主是谁">👨‍💻 博主是谁</h2>
-<h2 id="兴趣爱好">⛹ 兴趣爱好</h2>
-<h2 id="联系我呀">📬 联系我呀</h2>
+                <p>传统的方法：<br>
+function initialize(list) {<br>
+for(let i = 0; i &lt; list.length; i++) {<br>
+list[i] = 0;<br>
+}<br>
+return list;<br>
+}<br>
+const list = new Array(100);<br>
+initialize(list);<br>
+console.log(list); // [0, 0, ... 0]<br>
+新建的数组 new Array（100） ，元素的初始值是empty,而迭代方法（foreach、map、some、every、filter、reduce）及for in并不会遍历数组中的empty元素，所以用这两种方法的初始化是不行的<br>
+有效做法：<br>
+const list =[..Array(100)].map(()=&gt;0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+还可以用Array.from方法创建初始数组, 第二参数是迭代算子，所以不必+map转2次<br>
+const list =Array.from({length:100},()=&gt;0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+由于例子中初始化数组的初始值是固定的数值0，所以可以使用Array.prototype.fill方法<br>
+const list =Array(100).fill(0)<br>
+console.log(list) // [0,0,0,0,0,0,.....0,0,0]<br>
+注意fill方法用来填充元素的值如果是引用类型，它并不会拷贝这个值，而是直接将引用赋给数组，这也就是说，如果我们企图通过fill来初始化二维数组，是有问题的<br>
+const matrix = Array(3).fill(Array(3).fill(0));<br>
+matrix[0][1] = 1;<br>
+console.log(matrix); // [[0, 1, 0], [0, 1, 0], [0, 1, 0]]<br>
+matrix[0]、matrix[1]和matrix[2]指向同一个引用</p>
+<p>若想初始化一个长度10的数组，初始值分别0-9<br>
+const list = [..Array(10).keys()]<br>
+console.log(list)</p>
+<p>生成器！！！<br>
+只有mapFunc是生成器函数的时候，才用yield*迭代展开，否则直接yield返回。<br>
+function <em>initializer(count, mapFunc = i =&gt; i) {<br>
+for(let i = 0; i &lt; count; i++) {<br>
+if(mapFunc.constructor.name === 'GeneratorFunction') {<br>
+yield</em> mapFunc(i, count);<br>
+} else {<br>
+yield mapFunc(i, count);<br>
+}<br>
+}<br>
+}<br>
+const list = [...initializer(3, i =&gt; [0, 0, 0])];<br>
+console.log(list); // [[0, 0, 0], [0, 0, 0], [0, 0, 0]]<br>
+const mat3 = [...initializer(3, function *(i) {<br>
+yield Number(i === 0);<br>
+yield Number(i === 1);<br>
+yield Number(i === 2);<br>
+})]<br>
+console.log(mat3); // [1, 0, 0, 0, 1, 0, 0, 0, 1]<br>
+生成器是个好东西，比如：初始化扑克牌时，[花色，点数]（不包括大小王）<br>
+const cards = [...initializer(13, function *(i) {<br>
+const p = i + 1;<br>
+yield ['♠️', p];<br>
+yield ['♣️', p];<br>
+yield ['♥️', p];<br>
+yield ['♦️', p];<br>
+})];<br>
+console.log(cards);</p>
 
               </div>
               <div class="toc-container">
-                <ul class="markdownIt-TOC">
-<li>
-<ul>
-<li><a href="#%E5%85%B3%E4%BA%8E%E6%9C%AC%E7%AB%99">🏠 关于本站</a></li>
-<li><a href="#%E5%8D%9A%E4%B8%BB%E6%98%AF%E8%B0%81">👨‍💻 博主是谁</a></li>
-<li><a href="#%E5%85%B4%E8%B6%A3%E7%88%B1%E5%A5%BD">⛹ 兴趣爱好</a></li>
-<li><a href="#%E8%81%94%E7%B3%BB%E6%88%91%E5%91%80">📬 联系我呀</a></li>
-</ul>
-</li>
-</ul>
-
+                
               </div>
             </div>
           </article>
         </div>
 
+        
+          <div class="next-post">
+            <div class="next">下一篇</div>
+            <a href="https://wxiaojia.github.io/post/hello-gridea/">
+              <h3 class="post-title">
+                Hello Gridea
+              </h3>
+            </a>
+          </div>
         
 
         
